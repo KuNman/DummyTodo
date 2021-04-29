@@ -1,0 +1,38 @@
+version: "3.7"
+
+services:
+  dummy-postgres:
+    image: 'postgres:11.5'
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_DB=dummy
+      - POSTGRES_PASSWORD=pwd
+      - PGDATA=/var/lib/postgresql/data/pgdata
+  dummy-backend:
+    depends_on:
+      - dummy-postgres
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: dummy-backend
+    volumes:
+      - ./src:/home/node/app/src
+      - ./nodemon.json:/home/node/app/nodemon.json
+      - ./tsconfig.json:/home/node/app/tsconfig.json
+      - ./dist:/home/node/app/dist
+    expose:
+      - "8080"
+    ports:
+      - "8080:8080"
+      - "9229:9229"
+    command: npm run start
+    environment:
+      - LC_CTYPE=en_US.UTF-8
+      - LC_ALL=en_US.UTF-8
+      - PGUSER=user
+      - PGHOST=dummy-postgres
+      - PGDATABASE=dummy
+      - PGPASSWORD=pwd
+      - PGPORT=5432
